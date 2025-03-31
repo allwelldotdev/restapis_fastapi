@@ -1,7 +1,7 @@
 [project]
 name = "restapis-fastapi"
 version = "0.1.0"
-description = "Add your description here"
+description = "Learning FastAPI with Mastering REST APIs with FastAPI by Jose Salvatierra Fuentes."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
