@@ -12,7 +12,7 @@ async def read_root():
     return {"Hello": "World!"}
 
 
-@app.post("/", response_model=UserPostOut)
+@app.post("/", response_model=UserPostOut, status_code=201)
 async def create_post(post: UserPostIn):
     # dumps the json pydantic object into a dict, stores in data
     data = post.model_dump()

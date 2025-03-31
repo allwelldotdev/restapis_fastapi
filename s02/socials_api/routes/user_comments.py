@@ -8,7 +8,7 @@ from ..schema.user_posts import UserPostOut
 router = APIRouter(prefix="/comment", tags=["user comments"])
 
 
-@router.post("/", response_model=UserComments)
+@router.post("/", response_model=UserComments, status_code=201)
 async def post_comments(comment: UserCommentIn):
     """Post comments on a post."""
     if comment.post_id not in post_table:
