@@ -2,4 +2,6 @@ from typing import Annotated
 
 from ..schema.user_comments import UserComment
 
-comment_table: Annotated[dict, dict[int, list[UserComment]]] = {}
+comment_db: dict[
+    Annotated[int, "post_id"], Annotated[list[UserComment], "list of comments"]
+] = {}
