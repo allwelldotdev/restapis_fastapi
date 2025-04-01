@@ -137,6 +137,29 @@ async def modify_comment(comment_id: int, new_comment: UserCommentIn):
     return result
 
 
+# Delete Comments by Post ID
+@router.delete("/post/{post_id}")
+async def delete_comments_by_post_id(post_id: int):
+    """Delete all comments to with a post id. Also deletes all post comments from the comment database."""
+    # check if post_id is in post_db
+    if post_id not in post_db:
+        raise HTTPException(status_code=404, detail="Post id not found.")
+
+    # get comments_list by post and check if post has any comment
+    comments_list = comment_db.get(post_id)
+    if not comments_list:
+        raise HTTPException(
+            status_code=404, detail="This post does not have any comments."
+        )
+
+    # delete post_id along with list of comments from comment_db
+    del comment_db[post_id]
+
+    return {
+        "message": f"All comments on post_id ({post_id}) have been deleted successfully."
+    }
+
+
 # Delete Comment by Commment ID
 @router.delete("/{comment_id}")
 async def delete_comment_by_comment_id(comment_id: int, post_id: int):
@@ -177,11 +200,3 @@ async def delete_comment_by_comment_id(comment_id: int, post_id: int):
             del comments_list[idx]
 
     return {"message": "Comment deleted successfully!"}
-
-
-# Delete Comments by Post ID
-@router.delete("/post/{post_id}")
-async def delete_comments_by_post_id(post_id: int):
-    """Delete all comments linked with a post id. Also deletes all post comments from the comment database."""
-    # write code here...
-    pass

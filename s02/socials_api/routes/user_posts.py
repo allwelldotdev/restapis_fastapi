@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from ..models.user_posts import post_db
 from ..schema.user_posts import UserPostIn, UserPostOut
+from .user_comments import delete_comments_by_post_id
 
 router = APIRouter(prefix="/post", tags=["user posts"])
 
@@ -57,9 +58,23 @@ async def update_post_by_id(id: int, post: UserPostIn) -> UserPostOut:
 
 # Delete Post by ID
 @router.delete("/{id}")
-async def delete_post_by_id(id: int) -> dict[str, str]:
+async def delete_post_by_id(id: int):
+    """Delete post by id. Also delete post_id from comment database."""
     if id not in post_db:
         raise HTTPException(status_code=404, detail="Post id not in database.")
 
-    del post_db[id]
-    return {"message": f"Post with id ({id}) deleted successfully!"}
+    try:
+        # delete/remove post_id from comment_db
+        comments_update = await delete_comments_by_post_id(id)
+    except HTTPException:
+        return {
+            "message": f"Post with id ({id}) deleted successfully!",
+            "post_comments": {"has_comments": False},
+        }
+    finally:
+        del post_db[id]
+
+    return {
+        "message": f"Post with id ({id}) deleted successfully!",
+        "post_comments": {"has_comments": True, **comments_update},
+    }
