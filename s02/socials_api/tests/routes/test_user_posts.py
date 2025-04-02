@@ -3,38 +3,9 @@ from httpx import AsyncClient
 
 from socials_api.api.models.user_comments import comment_db
 from socials_api.api.models.user_posts import post_db
+from socials_api.tests.utils import created_post as _created_post
 
-
-async def create_post(body: str, async_client: AsyncClient) -> dict[str, str]:
-    response = await async_client.post("/post", json={"body": body})
-    return response.json()
-
-
-# Simple Fixture
-@pytest.fixture  # similar to @pytest.fixture()
-async def created_post(async_client: AsyncClient):
-    """Simple fixture to call create_post function."""
-    return await create_post("Test Post", async_client)
-
-
-# Using Parameterized Fixtures
-@pytest.fixture(params=["Test Post 1", "Test Post 2"])
-async def created_post_PF(request, async_client: AsyncClient):
-    """Parameterized fixture for create_post function."""
-    return await create_post(request.param, async_client)
-
-
-# Using Fixture Factories
-@pytest.fixture  # similar to @pytest.fixture()
-def created_post_FF(async_client: AsyncClient):
-    """Fixture factory for create_post function. To enable passing of arguments when
-    async func (create_post) is called."""
-
-    async def _create_post(body: str = "Test Post"):
-        "Call create_post function with params."
-        return await create_post(body, async_client)
-
-    return _create_post
+created_post = _created_post
 
 
 @pytest.mark.anyio
