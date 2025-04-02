@@ -8,7 +8,7 @@ router = APIRouter(prefix="/post", tags=["user posts"])
 
 
 # Create Posts
-@router.post("/", response_model=UserPostOut, status_code=201)
+@router.post("", response_model=UserPostOut, status_code=201)
 async def create_post(post: UserPostIn):
     """Create social post."""
     # set post id with multiple variations to avoid duplication of id values
