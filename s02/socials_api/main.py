@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
-from .routes import user_comments, user_posts
+from .api.routes.user_comments import router as user_comments
+from .api.routes.user_posts import router as user_posts
 
 app = FastAPI()
 
@@ -10,5 +11,5 @@ async def read_root():
     return {"Hello": "World!"}
 
 
-app.include_router(user_posts.router)
-app.include_router(user_comments.router)
+app.include_router(user_posts)
+app.include_router(user_comments)
