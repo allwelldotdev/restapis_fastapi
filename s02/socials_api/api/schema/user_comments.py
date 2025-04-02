@@ -1,8 +1,7 @@
 from typing import Annotated
 
 from pydantic import BaseModel
-
-from .user_posts import UserPostOut
+from socials_api.api.schema.user_posts import UserPostOut
 
 
 class UserCommentIn(BaseModel):

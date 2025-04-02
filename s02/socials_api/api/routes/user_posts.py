@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
-
-from ..models.user_posts import post_db
-from ..schema.user_posts import UserPostIn, UserPostOut
-from .user_comments import delete_comments_by_post_id
+from socials_api.api.models.user_posts import post_db
+from socials_api.api.routes.user_comments import delete_comments_by_post_id
+from socials_api.api.schema.user_posts import UserPostIn, UserPostOut
 
 router = APIRouter(prefix="/post", tags=["user posts"])
 
