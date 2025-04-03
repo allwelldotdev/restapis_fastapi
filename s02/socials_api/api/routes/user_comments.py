@@ -152,7 +152,7 @@ async def delete_comments_by_post_id(post_id: int):
         )
 
     # delete post_id along with list of comments from comment_db
-    del comment_db[post_id]
+    comment_db.__delitem__(post_id)
 
     return {
         "message": f"All comments on post_id ({post_id}) have been deleted successfully."
@@ -196,6 +196,6 @@ async def delete_comment_by_comment_id(comment_id: int, post_id: int):
     # delete comment from comment_db
     for idx, val in enumerate(comments_list):
         if val["id"] == comment_id:
-            del comments_list[idx]
+            comments_list.remove(idx)
 
     return {"message": "Comment deleted successfully!"}

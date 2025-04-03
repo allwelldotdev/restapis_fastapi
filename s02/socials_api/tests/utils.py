@@ -17,10 +17,10 @@ async def created_post(async_client: AsyncClient):
     return await create_post("Test Post", async_client)
 
 
-# Using Parameterized Fixtures
+# Using Parametrized Fixtures
 @pytest.fixture(params=["Test Post 1", "Test Post 2"])
 async def created_post_param(request, async_client: AsyncClient):
-    """Parameterized fixture for create_post function."""
+    """Parametrized fixture for create_post function."""
     return await create_post(request.param, async_client)
 
 
@@ -53,7 +53,7 @@ async def create_comments(
         pass
 
 
-# Parameterized fixture for comments, depending on a post
+# Parametrized fixture for comments, depending on a post
 @pytest.fixture(params=[True, False])
 async def created_comments_param(
     request, created_post_factory, async_client: AsyncClient
@@ -66,7 +66,7 @@ async def created_comments_param(
 
 
 @pytest.fixture
-def created_comment_factory(created_post_factory, async_client: AsyncClient):
+def created_comment_factory(async_client: AsyncClient):
     async def _create_comments(
         post_id: int, body: str = "New Test Comment", is_active: bool = True
     ):

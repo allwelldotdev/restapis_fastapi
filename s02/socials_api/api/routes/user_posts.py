@@ -71,7 +71,7 @@ async def delete_post_by_id(id: int):
             "post_comments": {"has_comments": False},
         }
     finally:
-        del post_db[id]
+        post_db.__delitem__(id)
 
     return {
         "message": f"Post with id ({id}) deleted successfully!",
