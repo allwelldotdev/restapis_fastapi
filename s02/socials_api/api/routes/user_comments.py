@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from socials_api.api.models.user_comments import comment_db
-from socials_api.api.models.user_posts import post_db
-from socials_api.api.schema.user_comments import UserCommentIn, UserComments
-from socials_api.api.schema.user_posts import UserPostOut
+
+from ..models.user_comments import comment_db
+from ..models.user_posts import post_db
+from ..schema.user_comments import UserCommentIn, UserComments
+from ..schema.user_posts import UserPostOut
 
 router = APIRouter(prefix="/comment", tags=["user comments"])
 
