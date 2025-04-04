@@ -56,6 +56,7 @@ async def test_get_all_posts_with_empty_database(async_client: AsyncClient):
     assert response.json()["detail"] == "No post in database."
 
 
+# Test get_post_by_id
 @pytest.mark.anyio
 async def test_get_post_by_id(created_post, async_client: AsyncClient):
     """Test get_post_by_id function."""
@@ -64,6 +65,7 @@ async def test_get_post_by_id(created_post, async_client: AsyncClient):
     assert response.json() == created_post
 
 
+# Test get_post_by_id with nonexistent id
 @pytest.mark.anyio
 async def test_get_post_by_id_with_nonexistent_id(
     created_post, async_client: AsyncClient
@@ -74,16 +76,21 @@ async def test_get_post_by_id_with_nonexistent_id(
     assert response.json()["detail"] == "Post id not in database."
 
 
+# Test update_post_by_id, also test if post to be updated has post_id inside post_db
 @pytest.mark.anyio
 async def test_update_post_by_id(created_post, async_client: AsyncClient):
-    former_post_body, former_post_id = created_post["body"], created_post["id"]
-    response = await async_client.put("/post/0", json={"body": "Updated/New Post Body"})
+    former_post_body, post_id = created_post["body"], created_post["id"]
+    assert post_id in post_db  # check if post_id in db
+    response = await async_client.put(
+        f"/post/{post_id}", json={"body": "Updated/New Post Body"}
+    )
     assert response.status_code == 200
     assert former_post_body != response.json()["body"]
-    assert former_post_body != post_db.get(former_post_id)
+    assert former_post_body != post_db.get(post_id)
     assert {"id": 0, "body": "Updated/New Post Body"}.items() <= response.json().items()
 
 
+# Test delete_post_by_id
 @pytest.mark.parametrize("has_comments", [True, False])
 @pytest.mark.anyio
 async def test_delete_post_by_id(
@@ -103,7 +110,7 @@ async def test_delete_post_by_id(
         assert comment_db  # confirm comment_db is populated
 
         # delete post with comments
-        delete_post_response = await async_client.delete("/post/0")
+        delete_post_response = await async_client.delete(f"/post/{post_id}")
 
         # assert post is deleted
         len_of_db_after_del = len(post_db)
@@ -120,7 +127,7 @@ async def test_delete_post_by_id(
         }.items() <= delete_post_response.json().items()
     else:
         # delete post without comments
-        delete_post_response = await async_client.delete("/post/0")
+        delete_post_response = await async_client.delete(f"/post/{post_id}")
 
         # assert post is deleted
         len_of_db_after_del = len(post_db)

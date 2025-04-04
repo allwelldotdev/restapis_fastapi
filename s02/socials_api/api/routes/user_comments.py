@@ -194,8 +194,8 @@ async def delete_comment_by_comment_id(comment_id: int, post_id: int):
         )
 
     # delete comment from comment_db
-    for idx, val in enumerate(comments_list):
+    for val in comments_list:
         if val["id"] == comment_id:
-            comments_list.remove(idx)
+            comments_list.remove(val)
 
     return {"message": "Comment deleted successfully!"}

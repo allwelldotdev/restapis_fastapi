@@ -29,7 +29,7 @@ async def db() -> AsyncGenerator:
 
 
 @pytest.fixture  # similar to @pytest.fixture()
-async def async_client(client) -> AsyncGenerator:
+async def async_client(client: TestClient) -> AsyncGenerator:
     """Get async client with which to make HTTP requests."""
     async with AsyncClient(
         # using transport=ASGITransport from httpx is more recent and recommended than
