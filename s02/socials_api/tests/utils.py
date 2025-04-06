@@ -69,7 +69,7 @@ async def created_comments_param(
 def created_comment_factory(async_client: AsyncClient):
     async def _create_comments(
         post_id: int, body: str = "New Test Comment", is_active: bool = True
-    ):
+    ) -> Response:
         return await create_comments(post_id, body, async_client, is_active)
 
     return _create_comments

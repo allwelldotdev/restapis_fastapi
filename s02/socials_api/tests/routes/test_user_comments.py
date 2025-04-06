@@ -1,5 +1,7 @@
+from typing import Any
+
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 
 from socials_api.api.models.user_posts import post_db
 from socials_api.tests.utils import created_comment_factory as _created_comment_factory
@@ -44,11 +46,11 @@ async def test_get_all_comments(
     created_post_factory, created_comment_factory, async_client: AsyncClient
 ):
     """Test get_all_comments."""
-    post = await created_post_factory("Test Post")
+    post: dict[str, Any] = await created_post_factory("Test Post")
 
     comments = []
     for _ in range(2):
-        response = await created_comment_factory(post["id"], "Test Comment")
+        response: Response = await created_comment_factory(post["id"], "Test Comment")
         # check if comments are created
         assert response.status_code == 201
         comments.append(response)
