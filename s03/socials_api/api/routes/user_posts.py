@@ -1,0 +1,88 @@
+from fastapi import APIRouter, HTTPException
+
+from ..models.database import db, post_db
+from ..schema.user_posts import UserPostIn, UserPostOut
+from .user_comments import delete_comments_by_post_id
+
+router = APIRouter(prefix="/post", tags=["user posts"])
+
+
+# Create Posts
+@router.post("", response_model=UserPostOut, status_code=201)
+async def create_post(post: UserPostIn):
+    """Create social post."""
+    # either of both methods work...
+    # Method 1...
+    # q = post_db.insert().values(post.model_dump())
+    # last_post_id = await db.execute(q)
+    # Method 2...
+    q = post_db.insert()
+    post_id = await db.execute(q, post.model_dump())
+
+    return {**(post.model_dump()), "id": post_id}
+
+
+# Get All Posts
+@router.get("/all", response_model=list[UserPostOut])
+async def get_all_posts() -> list[UserPostOut]:
+    q = post_db.select()
+    result = await db.fetch_all(q)
+
+    if not result:
+        return []
+
+    return result
+
+
+# Get Post by ID
+@router.get("/{id}", response_model=UserPostOut)
+async def get_post_by_id(id: int) -> UserPostOut:
+    q = post_db.select().where(post_db.c.id == id)
+    post = await db.fetch_one(q)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post id not in database.")
+
+    return {"id": post.id, "body": post.body}
+
+
+# Update Post by ID
+@router.put("/{id}", response_model=UserPostOut)
+async def update_post_by_id(id: int, post: UserPostIn) -> UserPostOut:
+    # check if post exists
+    q = post_db.select().where(post_db.c.id == id)
+    post = await db.fetch_one(q)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post id not in database.")
+
+    # update post in db
+    q = post_db.update().where(post_db.c.id == id).values(body=post.body)
+    await db.execute(q)
+
+    return {**(post.model_dump()), "id": post.id}
+
+
+# Delete Post by ID
+@router.delete("/{id}")
+async def delete_post_by_id(id: int):
+    """Delete post by id. Also delete post_id from comment database."""
+    q = post_db.select().where(post_db.c.id == id)
+    post = await db.fetch_one(q)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post id not in database.")
+
+    try:
+        # delete comments associated with post
+        comments_update = await delete_comments_by_post_id(id)
+    except HTTPException:
+        return {
+            "message": f"Post with id ({id}) deleted successfully!",
+            "post_comments": {"has_comments": False},
+        }
+    finally:
+        q = post_db.delete().where(post_db.c.id == id)
+        await db.execute(q)
+
+    return {
+        "message": f"Post with id ({id}) deleted successfully!",
+        "post_comments": {"has_comments": True, **comments_update},
+    }

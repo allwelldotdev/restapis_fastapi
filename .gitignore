@@ -10,3 +10,4 @@ wheels/
 .venv
 
 learning_resources/
+.env

@@ -5,6 +5,9 @@ description = "Learning FastAPI with Mastering REST APIs with FastAPI by Jose Sa
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "databases[aiosqlite]>=0.9.0",
     "fastapi[all]>=0.115.12",
     "pytest>=8.3.5",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.40",
 ]
