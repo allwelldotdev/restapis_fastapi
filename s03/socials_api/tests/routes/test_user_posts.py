@@ -1,8 +1,9 @@
+import random
+
 import pytest
 from httpx import AsyncClient
 
-from socials_api.api.models.user_comments import comment_db
-from socials_api.api.models.user_posts import post_db
+from socials_api.api.models.database import comment_db, db, post_db
 from socials_api.tests.utils import created_comment_factory as _created_comment_factory
 from socials_api.tests.utils import created_post as _created_post
 
@@ -17,8 +18,13 @@ async def test_creat_post(async_client: AsyncClient):
     """Test create_post function."""
     body = "Test Post"
     response = await async_client.post("/post", json={"body": body})
+
+    # check post_db and grab created post_id
+    q = post_db.select()
+    post = await db.fetch_one(q)
+
     assert response.status_code == 201
-    assert {"id": 0, "body": body}.items() <= response.json().items()
+    assert {"id": post.id, "body": body}.items() <= response.json().items()
 
 
 # Test create_post with no body
@@ -35,13 +41,7 @@ async def test_create_post_with_no_body(async_client: AsyncClient):
 @pytest.mark.anyio
 async def test_get_all_posts(created_post, async_client: AsyncClient):
     """Test get_all_posts function."""
-    # Configure and create post before testing :: Testing using Fixture Factories
-    # post = await created_post("Test Post 4")
-    # print(post)
-    # print(created_post) :: Testing using Parameterized Fixtures
-
     response = await async_client.get("/post/all")
-    # print(response.json())
     assert response.status_code == 200
     assert response.json() == [created_post]
 
@@ -52,15 +52,25 @@ async def test_get_all_posts_with_empty_database(async_client: AsyncClient):
     """Test for get_all_posts function with exception if no
     post in (empty) database."""
     response = await async_client.get("/post/all")
-    assert response.status_code == 404
-    assert response.json()["detail"] == "No post in database."
+
+    # assert post_db is empty
+    q = post_db.select()
+    posts = await db.fetch_all(q)
+    assert not posts
+
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 # Test get_post_by_id
 @pytest.mark.anyio
 async def test_get_post_by_id(created_post, async_client: AsyncClient):
     """Test get_post_by_id function."""
-    response = await async_client.get("/post/0")
+    # check post_db for post and grab post_id
+    q = post_db.select()
+    post = await db.fetch_one(q)
+
+    response = await async_client.get(f"/post/{post.id}")
     assert response.status_code == 200
     assert response.json() == created_post
 
@@ -71,23 +81,42 @@ async def test_get_post_by_id_with_nonexistent_id(
     created_post, async_client: AsyncClient
 ):
     """Test get_post_by_id function."""
-    response = await async_client.get("/post/1")
+    # get random number
+    random_number = random.randint(10, 20)
+
+    response = await async_client.get(f"/post/{random_number}")
     assert response.status_code == 404
     assert response.json()["detail"] == "Post id not in database."
 
 
-# Test update_post_by_id, also test if post to be updated has post_id inside post_db
+# Test update_post_by_id
 @pytest.mark.anyio
 async def test_update_post_by_id(created_post, async_client: AsyncClient):
+    """Test update_post_by_id function."""
     former_post_body, post_id = created_post["body"], created_post["id"]
-    assert post_id in post_db  # check if post_id in db
     response = await async_client.put(
         f"/post/{post_id}", json={"body": "Updated/New Post Body"}
     )
     assert response.status_code == 200
     assert former_post_body != response.json()["body"]
-    assert former_post_body != post_db.get(post_id)
-    assert {"id": 0, "body": "Updated/New Post Body"}.items() <= response.json().items()
+    assert {
+        "id": post_id,
+        "body": "Updated/New Post Body",
+    }.items() <= response.json().items()
+
+
+# Test update_post_by_id with nonexistent id
+@pytest.mark.anyio
+async def test_update_post_by_id_with_exceptions(
+    created_post, async_client: AsyncClient
+):
+    """Test if update_post_by_id can handle exceptions."""
+    random_number = random.randint(10, 20)
+    response = await async_client.put(
+        f"/post/{random_number}", json={"body": "Update/New Post Body"}
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Post id not in database."
 
 
 # Test delete_post_by_id
@@ -101,21 +130,24 @@ async def test_delete_post_by_id(
     2. Deleting post without comments."""
 
     post_id = created_post["id"]  # grab created post id
-    len_of_db_before_del = len(post_db)
-    assert post_id in post_db
+    q = post_db.select()
+    post = await db.fetch_one(q)
+    assert post_id == post.id
 
     if has_comments:
         # create comment on post
         await created_comment_factory(post_id)
-        assert comment_db  # confirm comment_db is populated
+        q = comment_db.select().where(comment_db.c.post_id == post.id)
+        comment = await db.fetch_one(q)
+        assert comment  # confirm comment_db is populated
 
         # delete post with comments
         delete_post_response = await async_client.delete(f"/post/{post_id}")
 
         # assert post is deleted
-        len_of_db_after_del = len(post_db)
-        assert len_of_db_before_del > len_of_db_after_del
-        assert post_id not in post_db
+        q = post_db.select().where(post_db.c.id == post.id)
+        deleted_post = await db.fetch_one(q)
+        assert not deleted_post
 
         assert delete_post_response.status_code == 200
         assert {
@@ -127,12 +159,12 @@ async def test_delete_post_by_id(
         }.items() <= delete_post_response.json().items()
     else:
         # delete post without comments
-        delete_post_response = await async_client.delete(f"/post/{post_id}")
+        delete_post_response = await async_client.delete(f"/post/{post.id}")
 
         # assert post is deleted
-        len_of_db_after_del = len(post_db)
-        assert len_of_db_before_del > len_of_db_after_del
-        assert post_id not in post_db
+        q = post_db.select().where(post_db.c.id == post.id)
+        deleted_post = await db.fetch_one(q)
+        assert not deleted_post
 
         assert delete_post_response.status_code == 200
         assert {

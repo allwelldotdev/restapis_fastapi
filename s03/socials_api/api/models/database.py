@@ -2,7 +2,7 @@ import databases
 import sqlalchemy
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 
-from ....socials_api.config import config
+from socials_api.config import config
 
 # connectivity engine/factory to connect to target db ('sqlite' in this case)
 engine = sqlalchemy.create_engine(

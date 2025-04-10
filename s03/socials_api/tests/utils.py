@@ -53,6 +53,11 @@ async def create_comments(
         pass
 
 
+@pytest.fixture
+async def created_comment(created_post, async_client: AsyncClient) -> Response:
+    return await create_comments(created_post["id"], "Test Comment", async_client, True)
+
+
 # Parametrized fixture for comments, depending on a post
 @pytest.fixture(params=[True, False])
 async def created_comments_param(

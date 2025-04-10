@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-from ..models.database import comment_db, db, post_db
-from ..schema.user_comments import UserCommentIn, UserComments
-from ..schema.user_posts import UserPostOut
+from socials_api.api.models.database import comment_db, db, post_db
+from socials_api.api.schema.user_comments import UserCommentIn, UserComments
 
 router = APIRouter(prefix="/comment", tags=["user comments"])
 
@@ -27,9 +26,7 @@ async def post_comments(comment: UserCommentIn):
     comment_data = {"id": comment_id, "comment": comment.body}
 
     # return new comment
-    new_comment = UserComments(
-        post=UserPostOut(body=post.body, id=post.id), comments=[comment_data]
-    )
+    new_comment = UserComments(post=post, comments=[comment_data])
     return new_comment
 
 
@@ -53,7 +50,7 @@ async def get_all_comments():
         {
             "post": {"body": post.body, "id": post.id},
             "comments": [
-                {"id": comment.id, "comment": comment.body}
+                {"id": comment.id, "comment": comment.comment}
                 for comment in all_comments
                 if comment.post_id == post.id
             ],
@@ -78,13 +75,9 @@ async def get_comments_by_post_id(post_id: int):
     if not comments:
         comments_list = []
 
-    comments_list = [
-        {"id": comment.id, "comment": comment.body} for comment in comments
-    ]
+    comments_list = [{"id": row.id, "comment": row.comment} for row in comments]
 
-    return UserComments(
-        post=UserPostOut(body=post.body, id=post.id), comments=comments_list
-    )
+    return UserComments(post=post, comments=comments_list)
 
 
 # Modify/Update Comment by Comment ID
@@ -107,11 +100,11 @@ async def modify_comment(comment_id: int, body: str):
     comment = await db.fetch_one(q)
     # grab comment post data
     q = post_db.select().where(post_db.c.id == comment.post_id)
-    post = db.fetch_one(q)
+    post = await db.fetch_one(q)
 
     # grab new comment from _comment_db and return
     result = UserComments(
-        post=UserPostOut(body=post.body, id=post.id),
+        post=post,
         comments=[{"id": comment.id, "comment": comment.comment}],
     )
     return result
@@ -148,7 +141,7 @@ async def delete_comment_by_comment_id(comment_id: int):
     """Delete comment by comment id."""
     # check if comment exists
     q = comment_db.select().where(comment_db.c.id == comment_id)
-    comment = await db.execute(q)
+    comment = await db.fetch_one(q)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found.")
 

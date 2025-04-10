@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class UserPostIn(BaseModel):
@@ -7,3 +7,4 @@ class UserPostIn(BaseModel):
 
 class UserPostOut(UserPostIn):
     id: int
+    model_config = ConfigDict(from_attributes=True)

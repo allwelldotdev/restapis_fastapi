@@ -5,14 +5,11 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
-# from socials_api.api.models.user_comments import comment_db
-# from socials_api.api.models.user_posts import post_db
-from socials_api.api.models.database import db as database
-
 # overwrite .env file value "ENV_STATE" to "test" for db test purposes
 os.environ["ENV_STATE"] = "test"
 
 # comment 'noqa: E402' on import line to make Ruff not format the import line
+from socials_api.api.models.database import db  # noqa: E402
 from socials_api.main import app  # noqa: E402
 
 
@@ -28,11 +25,11 @@ def client() -> Generator:
 
 
 @pytest.fixture(autouse=True)
-async def db() -> AsyncGenerator:
+async def db_fixture() -> AsyncGenerator:
     """Create db fixture to empty (clear) db before each test run."""
-    await database.connect()
+    await db.connect()
     yield
-    await database.disconnect()
+    await db.disconnect()
 
 
 @pytest.fixture  # similar to @pytest.fixture()

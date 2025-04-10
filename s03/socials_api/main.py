@@ -2,9 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from .api.models.database import db
-from .api.routes.user_comments import router as user_comments
-from .api.routes.user_posts import router as user_posts
+from socials_api.api.models.database import db
+from socials_api.api.routes.user_comments import router as user_comments
+from socials_api.api.routes.user_posts import router as user_posts
 
 
 # connect to database before and after request operations

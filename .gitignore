@@ -11,3 +11,5 @@ wheels/
 
 learning_resources/
 .env
+test.db
+data.db

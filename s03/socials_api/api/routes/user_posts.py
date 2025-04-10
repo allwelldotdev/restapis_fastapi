@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-from ..models.database import db, post_db
-from ..schema.user_posts import UserPostIn, UserPostOut
-from .user_comments import delete_comments_by_post_id
+from socials_api.api.models.database import db, post_db
+from socials_api.api.routes.user_comments import delete_comments_by_post_id
+from socials_api.api.schema.user_posts import UserPostIn, UserPostOut
 
 router = APIRouter(prefix="/post", tags=["user posts"])
 
@@ -26,12 +26,12 @@ async def create_post(post: UserPostIn):
 @router.get("/all", response_model=list[UserPostOut])
 async def get_all_posts() -> list[UserPostOut]:
     q = post_db.select()
-    result = await db.fetch_all(q)
+    posts = await db.fetch_all(q)
 
-    if not result:
+    if not posts:
         return []
 
-    return result
+    return posts
 
 
 # Get Post by ID
@@ -42,12 +42,12 @@ async def get_post_by_id(id: int) -> UserPostOut:
     if not post:
         raise HTTPException(status_code=404, detail="Post id not in database.")
 
-    return {"id": post.id, "body": post.body}
+    return post
 
 
 # Update Post by ID
 @router.put("/{id}", response_model=UserPostOut)
-async def update_post_by_id(id: int, post: UserPostIn) -> UserPostOut:
+async def update_post_by_id(id: int, new_post: UserPostIn) -> UserPostOut:
     # check if post exists
     q = post_db.select().where(post_db.c.id == id)
     post = await db.fetch_one(q)
@@ -55,10 +55,15 @@ async def update_post_by_id(id: int, post: UserPostIn) -> UserPostOut:
         raise HTTPException(status_code=404, detail="Post id not in database.")
 
     # update post in db
-    q = post_db.update().where(post_db.c.id == id).values(body=post.body)
-    await db.execute(q)
+    q_update_post = (
+        post_db.update().where(post_db.c.id == id).values(body=new_post.body)
+    )
+    await db.execute(q_update_post)
 
-    return {**(post.model_dump()), "id": post.id}
+    # get updated post
+    post = await db.fetch_one(q)
+
+    return post
 
 
 # Delete Post by ID
