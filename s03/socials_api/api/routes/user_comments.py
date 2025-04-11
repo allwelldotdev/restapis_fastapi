@@ -1,17 +1,17 @@
 from fastapi import APIRouter, HTTPException
 
 from socials_api.api.models.database import comment_db, db, post_db
-from socials_api.api.schema.user_comments import UserCommentIn, UserComments
+from socials_api.api.schema.user_comments import UserCommentIn, UserCommentOut
 
 router = APIRouter(prefix="/comment", tags=["user comments"])
 
 
 # Post Comments
-@router.post("", response_model=UserComments, status_code=201)
-async def post_comments(comment: UserCommentIn):
+@router.post("", response_model=UserCommentOut, status_code=201)
+async def post_comments(input: UserCommentIn):
     """Post comments on a post."""
     # check if comment post_id exists
-    q = post_db.select().where(post_db.c.id == comment.post_id)
+    q = post_db.select().where(post_db.c.id == input.post_id)
     post = await db.fetch_one(q)
     if not post:
         raise HTTPException(
@@ -19,49 +19,24 @@ async def post_comments(comment: UserCommentIn):
         )
 
     # set post comment
-    q = comment_db.insert().values({"comment": comment.body, "post_id": post.id})
+    q = comment_db.insert().values({"comment": input.comment, "post_id": post.id})
     comment_id = await db.execute(q)
 
-    # set return comment data
-    comment_data = {"id": comment_id, "comment": comment.body}
-
-    # return new comment
-    new_comment = UserComments(post=post, comments=[comment_data])
-    return new_comment
+    return {"id": comment_id, "comment": input.comment, "post_id": post.id}
 
 
 # Get All Comments
-@router.get("/all", response_model=list[UserComments])
+@router.get("/all", response_model=list[UserCommentOut])
 async def get_all_comments():
     """Get all post comments."""
-    # check if posts exist
-    q = post_db.select()
-    all_posts = await db.fetch_all(q)
-    if not all_posts:
-        raise HTTPException(status_code=404, detail="No post no comments.")
-
-    # check if comments exist
     q = comment_db.select()
     all_comments = await db.fetch_all(q)
-    if not all_comments:
-        raise HTTPException(status_code=404, detail="Comments not found.")
 
-    result = [
-        {
-            "post": {"body": post.body, "id": post.id},
-            "comments": [
-                {"id": comment.id, "comment": comment.comment}
-                for comment in all_comments
-                if comment.post_id == post.id
-            ],
-        }
-        for post in all_posts
-    ]
-    return result
+    return all_comments
 
 
 # Get Comments by Post ID
-@router.get("/{post_id}", response_model=UserComments)
+@router.get("/{post_id}", response_model=list[UserCommentOut])
 async def get_comments_by_post_id(post_id: int):
     """Get comments by post."""
     # check if post exist
@@ -72,19 +47,15 @@ async def get_comments_by_post_id(post_id: int):
 
     q = comment_db.select().where(comment_db.c.post_id == post.id)
     comments = await db.fetch_all(q)
-    if not comments:
-        comments_list = []
 
-    comments_list = [{"id": row.id, "comment": row.comment} for row in comments]
-
-    return UserComments(post=post, comments=comments_list)
+    return comments
 
 
 # Modify/Update Comment by Comment ID
-@router.put("/{comment_id}", response_model=UserComments)
-async def modify_comment(comment_id: int, body: str):
+@router.put("/{comment_id}", response_model=UserCommentOut)
+async def modify_comment(comment_id: int, comment_body: str):
     """Modify comment by comment id and post id."""
-    # check if comment exists
+    # check if comment_id exists
     q = comment_db.select().where(comment_db.c.id == comment_id)
     comment = await db.fetch_one(q)
     if not comment:
@@ -92,22 +63,15 @@ async def modify_comment(comment_id: int, body: str):
 
     # update comment
     q_update_comment = (
-        comment_db.update().where(comment_db.c.id == comment_id).values(comment=body)
+        comment_db.update()
+        .where(comment_db.c.id == comment_id)
+        .values(comment=comment_body)
     )
     await db.execute(q_update_comment)
 
     # grab new comment data
     comment = await db.fetch_one(q)
-    # grab comment post data
-    q = post_db.select().where(post_db.c.id == comment.post_id)
-    post = await db.fetch_one(q)
-
-    # grab new comment from _comment_db and return
-    result = UserComments(
-        post=post,
-        comments=[{"id": comment.id, "comment": comment.comment}],
-    )
-    return result
+    return comment
 
 
 # Delete Comments by Post ID

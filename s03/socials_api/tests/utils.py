@@ -46,7 +46,7 @@ async def create_comments(
 ) -> Response:
     if is_active:
         response = await async_client.post(
-            "/comment", json={"post_id": post_id, "body": body}
+            "/comment", json={"post_id": post_id, "comment": body}
         )
         return response
     else:

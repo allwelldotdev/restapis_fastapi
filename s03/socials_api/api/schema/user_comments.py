@@ -1,13 +1,11 @@
 from typing import Annotated
 
-from pydantic import BaseModel
-
-from socials_api.api.schema.user_posts import UserPostOut
+from pydantic import BaseModel, ConfigDict
 
 
 class UserCommentIn(BaseModel):
     post_id: Annotated[int, "post_id"]
-    body: Annotated[str, "comment_body"]
+    comment: Annotated[str, "comment_body"]
 
 
 class UserComment(BaseModel):
@@ -15,6 +13,6 @@ class UserComment(BaseModel):
     comment: Annotated[str, "comment_body"]
 
 
-class UserComments(BaseModel):
-    post: UserPostOut
-    comments: list[UserComment]
+class UserCommentOut(UserComment):
+    post_id: Annotated[int, "post_id"]
+    model_config = ConfigDict(from_attributes=True)

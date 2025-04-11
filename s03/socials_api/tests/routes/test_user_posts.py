@@ -1,14 +1,16 @@
 import random
 
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 
 from socials_api.api.models.database import comment_db, db, post_db
 from socials_api.tests.utils import created_comment_factory as _created_comment_factory
 from socials_api.tests.utils import created_post as _created_post
+from socials_api.tests.utils import created_post_factory as _created_post_factory
 
 # set fixture variables
 created_post = _created_post
+created_post_factory = _created_post_factory
 created_comment_factory = _created_comment_factory
 
 
@@ -60,6 +62,77 @@ async def test_get_all_posts_with_empty_database(async_client: AsyncClient):
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+# Test get_all_posts_with_comments
+@pytest.mark.anyio
+async def test_get_all_posts_with_comments(
+    created_post, created_comment_factory, async_client: AsyncClient
+):
+    """Test get_all_posts_with_comments function."""
+
+    # grab post id and body
+    post_id, post_body = created_post["id"], created_post["body"]
+
+    # create comments
+    comments = []
+    for _ in range(2):
+        response: Response = await created_comment_factory(post_id, "Test Comment")
+        # check if comments are created
+        assert response.status_code == 201
+        comments.append(response)
+
+    # clean up comments data
+    comment_1 = comments[0].json()
+    comment_1.pop("post_id")
+
+    comment_2 = comments[1].json()
+    comment_2.pop("post_id")
+
+    # call get method
+    response = await async_client.get("/post/all/comments")
+    assert response.status_code == 200
+    assert {
+        "post": {"id": post_id, "body": post_body},
+        "comments": [comment_1, comment_2],
+    }.items() <= response.json()[0].items()
+
+
+# Test get_all_posts_with_comments with no post or no comment in db
+@pytest.mark.parametrize("no_post", [True, False])
+@pytest.mark.anyio
+async def test_get_all_posts_with_comments_with_no_post_comment_in_db(
+    created_post_factory, no_post: bool, async_client: AsyncClient
+):
+    """Test for get_all_posts_with_comments function with exception
+    if no post in (empty) database."""
+
+    # check: no post
+    if no_post:
+        response = await async_client.get("/post/all/comments")
+
+        # assert post_db is empty
+        q = post_db.select()
+        posts = await db.fetch_all(q)
+        assert not posts
+
+        assert response.status_code == 200
+        assert response.json() == []
+    else:
+        response = await created_post_factory()
+        post_id, post_body = response["id"], response["body"]
+
+        # assert post_db is not empty
+        q = post_db.select()
+        posts = await db.fetch_all(q)
+        assert posts
+
+        # call get method
+        response = await async_client.get("/post/all/comments")
+        assert response.status_code == 200
+        assert [
+            {"post": {"id": post_id, "body": post_body}, "comments": []}
+        ] == response.json()
 
 
 # Test get_post_by_id

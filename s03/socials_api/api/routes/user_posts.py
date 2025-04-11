@@ -1,8 +1,12 @@
 from fastapi import APIRouter, HTTPException
 
-from socials_api.api.models.database import db, post_db
+from socials_api.api.models.database import comment_db, db, post_db
 from socials_api.api.routes.user_comments import delete_comments_by_post_id
-from socials_api.api.schema.user_posts import UserPostIn, UserPostOut
+from socials_api.api.schema.user_posts import (
+    UserPostIn,
+    UserPostOut,
+    UserPostWithComments,
+)
 
 router = APIRouter(prefix="/post", tags=["user posts"])
 
@@ -32,6 +36,34 @@ async def get_all_posts() -> list[UserPostOut]:
         return []
 
     return posts
+
+
+# Get All Posts with Comments
+@router.get("/all/comments", response_model=list[UserPostWithComments])
+async def get_all_posts_with_comments():
+    """Get all posts with comments."""
+    # fetch posts
+    q = post_db.select()
+    all_posts = await db.fetch_all(q)
+    # if not all_posts:
+    #     return []
+
+    # fetch comments
+    q = comment_db.select()
+    all_comments = await db.fetch_all(q)
+
+    result = [
+        {
+            "post": {"body": post.body, "id": post.id},
+            "comments": [
+                {"id": comment.id, "comment": comment.comment}
+                for comment in all_comments
+                if comment.post_id == post.id
+            ],
+        }
+        for post in all_posts
+    ]
+    return result
 
 
 # Get Post by ID
