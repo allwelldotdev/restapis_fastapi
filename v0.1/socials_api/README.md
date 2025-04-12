@@ -8,7 +8,7 @@ Built a minimal Social Media API with REST architecture as a project to deepen m
 
 Using Swagger UI, you can access the API docs at the `/docs` endpoint (as seen below).
 
-![API docs from Swagger UI](./assets/doc_imgs/api_docs.png)
+![API docs from Swagger UI](../../assets/doc_imgs/api_docs.png)
 
 ## Code Functionality
 1. **Dictionary-based Data Storage:** At the moment, the API uses a dictionary object as a make-shift for data storage and retrieval.
@@ -17,31 +17,31 @@ Using Swagger UI, you can access the API docs at the `/docs` endpoint (as seen b
 
 
 ## TDD (Test Driven Development)
-To ensure TDD (Test Driven Development), I used the popular Python testing framework `pytest` to write FastAPI unit tests for the codebase. All 23 tests pass! You can find tests code in `./v0.1/socials_api/tests/` directory.
+To ensure TDD (Test Driven Development), I used the popular Python testing framework `pytest` to write FastAPI unit tests for the codebase. All 23 tests pass! You can find tests code in `./tests/` directory.
 
-![v0.1 tests with pytest](./assets/doc_imgs/v0.1_tests.png)
+![v0.1 tests with pytest](../../assets/doc_imgs/v0.1_tests.png)
 
 ## Code use
 An exhibit of API calls to display what the API can do. Testing using Postman API Client:
 1. Create Post
 
-![v0.1 API 'create post' example](./assets/doc_imgs/v0.1_create_post.png)
+![v0.1 API 'create post' example](../../assets/doc_imgs/v0.1_create_post.png)
 
 2. Get All Posts
 
-![v0.1 API 'get all posts' example](./assets/doc_imgs/v0.1_get_all_posts.png)
+![v0.1 API 'get all posts' example](../../assets/doc_imgs/v0.1_get_all_posts.png)
 
 3. Post Comments
 
-![v0.1 API 'post comments' example](./assets/doc_imgs/v0.1_post_comments.png)
+![v0.1 API 'post comments' example](../../assets/doc_imgs/v0.1_post_comments.png)
 
 4. Modify Comment
 
-![v0.1 API 'modify comments' example](./assets/doc_imgs/v0.1_modify_comment.png)
+![v0.1 API 'modify comments' example](../../assets/doc_imgs/v0.1_modify_comment.png)
 
 5. Get All Comments
 
-![v0.1 API 'get all comments' example](./assets/doc_imgs/v0.1_get_all_comments.png)
+![v0.1 API 'get all comments' example](../../assets/doc_imgs/v0.1_get_all_comments.png)
 
 
 ## Run code locally...
