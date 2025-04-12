@@ -8,7 +8,7 @@ Built a minimal Social Media API with REST architecture as a project to deepen m
 
 Using Swagger UI, you can access the API docs at the `/docs` endpoint (as seen below).
 
-![API docs from Swagger UI](../../assets/doc_imgs/api_docs.png)
+![API docs from Swagger UI](../../assets/doc_imgs/v0.1_api_docs.png)
 
 ## Code Functionality
 1. **Dictionary-based Data Storage:** At the moment, the API uses a dictionary object as a make-shift for data storage and retrieval.

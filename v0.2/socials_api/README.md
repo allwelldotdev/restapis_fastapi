@@ -8,7 +8,7 @@ Built a minimal Social Media API with REST architecture as a project to deepen m
 
 Using Swagger UI, you can access the API docs at the `/docs` endpoint (as seen below).
 
-![API docs from Swagger UI](./assets/doc_imgs/v0.2_api_docs.png)
+![API docs from Swagger UI](../../assets/doc_imgs/v0.2_api_docs.png)
 
 ## Code Functionality *(Updated in v0.2)*
 1. **SQLite SQL Database:** Transitioned from a dictionary-based data storage system to using an SQLite database for persisten data storage and retrieval.
@@ -17,27 +17,27 @@ Using Swagger UI, you can access the API docs at the `/docs` endpoint (as seen b
 
 
 ## TDD (Test Driven Development)
-To ensure TDD (Test Driven Development), I used the popular Python testing framework `pytest` to write FastAPI unit tests for the codebase. All 24 tests pass! You can find tests code in `./v0.2/socials_api/tests/` directory.
+To ensure TDD (Test Driven Development), I used the popular Python testing framework `pytest` to write FastAPI unit tests for the codebase. All 24 tests pass! You can find tests code in `./tests/` directory.
 
-![v0.2 tests with pytest](./assets/doc_imgs/v0.2_tests.png)
+![v0.2 tests with pytest](../../assets/doc_imgs/v0.2_tests.png)
 
 ## Code use
 An exhibit of API calls to display what the API can do. Testing using Postman API Client:
 1. Create Post
 
-![v0.2 API 'create post' example](./assets/doc_imgs/v0.2_create_post.png)
+![v0.2 API 'create post' example](../../assets/doc_imgs/v0.2_create_post.png)
 
 2. Post Comments
 
-![v0.2 API 'post comments' example](./assets/doc_imgs/v0.2_post_comment.png)
+![v0.2 API 'post comments' example](../../assets/doc_imgs/v0.2_post_comment.png)
 
 3. Get All Comments
 
-![v0.2 API 'get all comments' example](./assets/doc_imgs/v0.2_get_all_comments.png)
+![v0.2 API 'get all comments' example](../../assets/doc_imgs/v0.2_get_all_comments.png)
 
 4. Delete Post By Id
 
-![v0.2 API 'delete post by id' example](./assets/doc_imgs/v0.2_delete_post_by_id.png)
+![v0.2 API 'delete post by id' example](../../assets/doc_imgs/v0.2_delete_post_by_id.png)
 
 
 ## Run code locally...
@@ -55,3 +55,5 @@ To run the codebase appropriately locally, read the following instructions:
   cd restapi_fastapi # make sure you are in the project root directory
   pytest -v v0.2/socials_api
   ```
+
+
