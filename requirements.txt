@@ -2,3 +2,5 @@ databases[aiosqlite]==0.9.0
 fastapi[all]==0.115.12
 python-dotenv==1.1.0
 sqlalchemy==2.0.40
+python-json-logger
+rich
